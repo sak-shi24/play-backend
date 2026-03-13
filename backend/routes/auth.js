@@ -76,8 +76,8 @@ router.post("/register", (req, res) => {
 /* =========================
    LOGIN
 ========================= */
-console.log("Login requests body:",req.body);
 router.post("/login", (req, res) => {
+   console.log("Login requests body:",req.body);
   const { phone, password } = req.body;
 
   if (!phone || !password) {
