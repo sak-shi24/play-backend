@@ -112,7 +112,7 @@ document.getElementById("qrForm").addEventListener("submit", async (e)=>{
 
     const formData = new FormData(e.target);
 
-    const res = await fetch("http://localhost:5000/api/admin/upload-qr",{
+    const res = await fetch("https://play-backend-xa7x.onrender.com/api/admin/upload-qr",{
         method:"POST",
         body:formData
     });
@@ -125,7 +125,7 @@ document.getElementById("qrForm").addEventListener("submit", async (e)=>{
    LOAD DEPOSITS
 ========================= */
 function loadDeposits(){
-  fetch("http://localhost:5000/api/admin/deposits")
+  fetch("https://play-backend-xa7x.onrender.com/api/admin/deposits")
   .then(res => res.json())
   .then(data => {
 
@@ -140,7 +140,7 @@ function loadDeposits(){
         <td>${d.name}</td>
         <td>${d.phone}</td>
         <td>${d.amount}</td>
-        <td><img src="http://localhost:5000/uploads/${d.screenshot}" /></td>
+        <td><img src="https://play-backend-xa7x.onrender.com/uploads/${d.screenshot}" /></td>
         <td>${d.status}</td>
         <td>
           ${
@@ -162,7 +162,7 @@ function loadDeposits(){
    APPROVE
 ========================= */
 function approve(id){
-  fetch("http://localhost:5000/api/admin/deposit/approve/"+id,{method:"POST"})
+  fetch("https://play-backend-xa7x.onrender.com/api/admin/deposit/approve/"+id,{method:"POST"})
   .then(()=>loadDeposits());
 }
 
@@ -170,7 +170,7 @@ function approve(id){
    REJECT
 ========================= */
 function reject(id){
-  fetch("http://localhost:5000/api/admin/deposit/reject/"+id,{method:"POST"})
+  fetch("https://play-backend-xa7x.onrender.com/api/admin/deposit/reject/"+id,{method:"POST"})
   .then(()=>loadDeposits());
 }
 
