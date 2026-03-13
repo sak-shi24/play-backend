@@ -150,7 +150,7 @@ function logout(){
 /* LOAD CHALLENGES */
 async function loadChallenges(){
   try{
-    const res = await fetch("http://localhost:5000/api/admin/challenges");
+    const res = await fetch("https://play-backend-xa7x.onrender.com/api/admin/challenges");
     const data = await res.json();
 
     const tbody = document.getElementById("challengeTable");
@@ -177,7 +177,7 @@ async function loadChallenges(){
 /* LOAD RESULTS */
 async function loadResults(){
   try{
-    const res = await fetch("http://localhost:5000/api/admin/challenge-results");
+    const res = await fetch("https://play-backend-xa7x.onrender.com/api/admin/challenge-results");
     const data = await res.json();
 
     const tbody = document.getElementById("resultTable");
@@ -185,9 +185,6 @@ async function loadResults(){
 
     data.results.forEach(r => {
 
-      // Define result_amount for wallet update
-      // Assuming r.amount comes from backend (challenge amount)
-      // Win → +amount, Loss → -amount
       const resultAmount = r.result === 'win' ? r.amount : -r.amount;
 
       tbody.innerHTML += `
@@ -227,8 +224,8 @@ function verifyResult(challenge_id, user_id, action, amount = 0){
   .then(res=>res.json())
   .then(data=>{
     alert(data.message);
-    loadResults();    // Refresh results table
-    loadChallenges(); // Refresh challenges table
+    loadResults();    
+    loadChallenges(); 
   })
   .catch(err=>console.error(err));
 }
