@@ -47,7 +47,7 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
   }
 
   try {
-    const res = await fetch("http://localhost:5000/api/auth/login", {
+    const res = await fetch("https://play-backend-xa7x.onrender.com/api/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -60,7 +60,7 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
     // 🔥 FIXED CONDITION
     if (data.user) {
       localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("user_id", data.user.id);   // IMPORTANT
+      localStorage.setItem("user_id", data.user.id);   
 
       document.getElementById("msg").innerText = "Login successful";
 
