@@ -1,5 +1,8 @@
 const express = require("express");
 const cors = require("cors");
+const app = express();
+app.use(cors());
+app.use(express.json()); 
 const path = require("path");
 
 const db = require("./config/db"); // Ensure this connects properly to MySQL
@@ -14,13 +17,9 @@ const challengeRoutes = require("./routes/challenge");
 const notificationRoutes = require("./routes/notifications");
 const adminNotificationRoutes = require("./routes/adminNotification");
 
-const app = express();
 
 
 
-// Middleware
-app.use(cors());
-app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Optional, for form submissions
 
 // Serve uploads folder
