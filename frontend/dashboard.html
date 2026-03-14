@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard</title>
+<link rel="stylesheet" href="css/style.css">
+
+<style>
+.bell-container{
+  position:fixed;
+  top:15px;
+  right:20px;
+  cursor:pointer;
+}
+.bell{ font-size:26px; }
+
+.badge{
+  position:absolute;
+  top:-5px;
+  right:-8px;
+  background:red;
+  color:white;
+  border-radius:50%;
+  padding:2px 6px;
+  font-size:12px;
+}
+
+.dropdown{
+  display:none;
+  position:absolute;
+  right:0;
+  top:35px;
+  width:300px;
+  max-height:350px;
+  overflow:auto;
+  background:#fff;
+  border-radius:8px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.15);
+  padding:10px;
+}
+
+.notification{
+  padding:8px;
+  border-bottom:1px solid #eee;
+  cursor:pointer;
+}
+
+.notification.unread{
+  background:#f1f7ff;
+  font-weight:bold;
+}
+
+/* DASHBOARD LAYOUT */
+.dashboard-layout{
+  display:flex;
+  gap:20px;
+  max-width:1200px;
+  margin:20px auto;
+  align-items:flex-start;
+}
+
+.dashboard-left{ flex:2; }
+
+.dashboard-right{
+  flex:1;
+  position:sticky;
+  top:100px;
+}
+
+.dashboard-right img{
+  width:100%;
+  border-radius:12px;
+  box-shadow:0 6px 15px rgba(0,0,0,0.15);
+}
+
+/* MOBILE */
+@media(max-width:900px){
+  .dashboard-layout{ flex-direction:column; }
+}
+</style>
+</head>
+
+<body>
+
+<script>
+const user = JSON.parse(localStorage.getItem("user"));
+if (!user) window.location.href = "login.html";
+</script>
+
+<header>
+  <h1>Play and Earn</h1>
+</header>
+
+<!-- 🔔 Notification -->
+<div class="bell-container" onclick="toggleDropdown()">
+  <span class="bell">🔔</span>
+  <span id="badge" class="badge">0</span>
+
+  <div id="dropdown" class="dropdown">
+    <h4>Notifications</h4>
+    <div id="notificationList"></div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav style="background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.1); padding:15px; display:flex; justify-content:center; gap:15px;">
+  <a href="profile.html" class="btn">Profile</a>
+  <a href="wallet.html" class="btn">Wallet</a>
+  <a href="transactions.html" class="btn">Transactions</a>
+  <a href="help.html" class="btn">Help & Support</a>
+  <button class="btn" onclick="logout()">Logout</button>
+</nav>
+
+<div class="container">
+  <h2 style="text-align:center; color:#4CAF50;">
+    <span id="username"></span>, welcome to Play and Earn
+  </h2>
+</div>
+
+<!-- ⭐ MAIN DASHBOARD -->
+<div class="dashboard-layout">
+
+  <!-- LEFT -->
+  <div class="dashboard-left">
+    <div class="challenge-section">
+      <h3>Create Challenge</h3>
+      <input type="number" id="challengeAmount" placeholder="Enter Amount">
+      <button onclick="createChallenge()">Create</button>
+
+      <h3>Existing Challenges</h3>
+      <ul id="challengeList"></ul>
+    </div>
+  </div>
+
+  <!-- RIGHT IMAGE -->
+  <div class="dashboard-right">
+    <img src="images/ludohome.jpeg" alt="game">
+  </div>
+
+</div>
+
+<script>
+document.getElementById("username").innerText = user.name;
+
+function toggleDropdown(){
+  const drop=document.getElementById("dropdown");
+  drop.style.display = drop.style.display==="block" ? "none" : "block";
+}
+
+/* NOTIFICATIONS */
+function loadNotifications(){
+fetch(`https://play-backend-xa7x.onrender.com/api/notifications/${user.id}`)
+.then(res=>res.json())
+.then(data=>{
+const list=document.getElementById("notificationList");
+list.innerHTML="";
+
+const arr = data.notifications || [];
+arr.forEach(n=>{
+  const div=document.createElement("div");
+  div.className="notification "+(n.status==="unread"?"unread":"");
+  div.innerText=n.message;
+  div.onclick=()=>markRead(n.id);
+  list.appendChild(div);
+});
+}).catch(()=>{});
+}
+
+function loadCount(){
+fetch(`https://play-backend-xa7x.onrender.com/api/notifications/count/${user.id}`)
+.then(res=>res.json())
+.then(data=>{
+document.getElementById("badge").innerText=data.count || 0;
+}).catch(()=>{});
+}
+
+function markRead(id){
+fetch(`https://play-backend-xa7x.onrender.com/api/notifications/read/${id}`,{method:"POST"})
+.then(()=>{ loadNotifications(); loadCount(); });
+}
+
+setInterval(()=>{ loadNotifications(); loadCount(); },4000);
+
+/* CHALLENGES */
+function loadChallenges(){
+fetch(`https://play-backend-xa7x.onrender.com/api/challenge/list/${user.id}`)
+.then(res=>res.json())
+.then(data=>{
+const list = document.getElementById("challengeList");
+list.innerHTML = "";
+
+(data || []).forEach(ch=>{
+  if(
+     !['open','room_created'].includes(ch.status) &&
+     ch.creator_id !== user.id &&
+     ch.joiner_id !== user.id
+  ) return;
+
+  const li = document.createElement("li");
+  li.innerText = `Challenge #${ch.id} - Amount: ${ch.amount}`;
+
+  const btn = document.createElement("button");
+  btn.style.marginLeft = "10px";
+
+  if(ch.creator_id === user.id && ch.status !== "completed"){
+    btn.innerText="Your Challenge";
+    btn.onclick=()=>window.location.href=`challenge-room.html?challenge_id=${ch.id}`;
+  }
+  else if(ch.status === "completed"){
+    btn.innerText="Completed";
+    btn.disabled = true;
+  }
+  else if(!ch.joiner_id){
+    btn.innerText="Accept";
+    btn.onclick=()=>acceptChallenge(ch.id);
+  }
+  else{
+    btn.innerText="Join";
+    btn.onclick=()=>window.location.href=`challenge-room.html?challenge_id=${ch.id}`;
+  }
+
+  li.appendChild(btn);
+  list.appendChild(li);
+});
+});
+}
+
+function createChallenge(){
+const amount=document.getElementById("challengeAmount").value;
+
+if(!amount || amount <=0){ alert("Enter valid amount"); return; }
+
+fetch("https://play-backend-xa7x.onrender.com/api/challenge/create",{
+method:"POST",
+headers:{ "Content-Type":"application/json" },
+body:JSON.stringify({creator_id:user.id,amount:amount})
+})
+.then(res=>res.json())
+.then(data=>{
+  alert(data.message);
+  if(data.success) loadChallenges();
+});
+}
+
+function acceptChallenge(id){
+fetch("https://play-backend-xa7x.onrender.com/api/challenge/accept",{
+method:"POST",
+headers:{ "Content-Type":"application/json" },
+body:JSON.stringify({challenge_id:id,user_id:user.id})
+})
+.then(res=>res.json())
+.then(data=>{
+if(data.success){
+  window.location.href = `challenge-room.html?challenge_id=${data.challenge_id}`;
+}else alert(data.message);
+});
+}
+
+function logout(){
+localStorage.removeItem("user");
+window.location.href="login.html";
+}
+
+loadChallenges();
+loadNotifications();
+loadCount();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Deposits</title>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+body{
+  font-family: Arial;
+  margin:0;
+  background:#eef1f5;
+}
+
+header{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#28a745;
+  color:white;
+  padding:10px;
+  position:relative;
+}
+
+header h1{
+  margin:0;
+}
+
+.logout{
+  position:absolute;
+  right:20px;
+  top:50%;
+  transform:translateY(-50%);
+  background:white;
+  color:#28a745;
+  border:none;
+  padding:8px 16px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.container{
+  width:95%;
+  margin:30px auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:white;
+  margin-bottom:40px;
+}
+
+th, td{
+  padding:10px;
+  border:1px solid #ddd;
+  text-align:center;
+}
+
+th{
+  background:#28a745;
+  color:white;
+}
+
+img{
+  width:80px;
+}
+
+button { padding:5px 10px; margin:2px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Deposits</h1>
+  <button class="logout" onclick="logout()">Logout</button>
+</header>
+
+<div class="container">
+
+<h2>Request List</h2>
+
+<table id="depositTable">
+<thead>
+<tr>
+<th>User ID</th>
+<th>Name</th>
+<th>Mobile</th>
+<th>Amount</th>
+<th>Screenshot</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<h2>Upload Deposit QR</h2>
+
+<form id="qrForm">
+    <input type="file" name="qr" required>
+    <button type="submit">Upload QR</button>
+</form>
+
+</div>
+
+<script>
+/* =========================
+   QR UPLOAD
+========================= */
+document.getElementById("qrForm").addEventListener("submit", async (e)=>{
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+
+    const res = await fetch("https://play-backend-xa7x.onrender.com/api/admin/upload-qr",{
+        method:"POST",
+        body:formData
+    });
+
+    const data = await res.json();
+    alert("QR Uploaded Successfully");
+});
+
+/* =========================
+   LOAD DEPOSITS
+========================= */
+function loadDeposits(){
+  fetch("https://play-backend-xa7x.onrender.com/api/admin/deposits")
+  .then(res => res.json())
+  .then(data => {
+
+    const tbody = document.querySelector("#depositTable tbody");
+    tbody.innerHTML = "";
+
+    data.deposits.forEach(d => {
+
+      tbody.innerHTML += `
+      <tr>
+        <td>${d.user_id}</td>
+        <td>${d.name}</td>
+        <td>${d.phone}</td>
+        <td>${d.amount}</td>
+        <td><img src="https://play-backend-xa7x.onrender.com/uploads/${d.screenshot}" /></td>
+        <td>${d.status}</td>
+        <td>
+          ${
+            d.status === "pending"
+            ? `
+                <button onclick="approve(${d.id})">Approve</button>
+                <button onclick="reject(${d.id})">Reject</button>
+              `
+            : d.status
+          }
+        </td>
+      </tr>
+      `;
+    });
+  });
+}
+
+/* =========================
+   APPROVE
+========================= */
+function approve(id){
+  fetch("https://play-backend-xa7x.onrender.com/api/admin/deposit/approve/"+id,{method:"POST"})
+  .then(()=>loadDeposits());
+}
+
+/* =========================
+   REJECT
+========================= */
+function reject(id){
+  fetch("https://play-backend-xa7x.onrender.com/api/admin/deposit/reject/"+id,{method:"POST"})
+  .then(()=>loadDeposits());
+}
+
+/* =========================
+   LOGOUT
+========================= */
+function logout(){
+  localStorage.clear();
+  location.href = "login.html";
+}
+
+loadDeposits();
+</script>
+
+</body>
+</html>

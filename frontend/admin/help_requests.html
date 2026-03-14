@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Help Requests</title>
+<link rel="stylesheet" href="../css/style.css">
+
+<style>
+body{
+  font-family: Arial;
+  background:#eef1f5;
+  margin:0;
+}
+
+header{
+  background:#28a745;
+  color:white;
+  padding:20px;
+  text-align:center;
+}
+
+.container{
+  width:95%;
+  margin:30px auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:white;
+}
+
+th, td{
+  padding:10px;
+  border:1px solid #ddd;
+  text-align:center;
+}
+
+th{
+  background:#28a745;
+  color:white;
+}
+
+button{
+  padding:6px 12px;
+  border:none;
+  background:#28a745;
+  color:white;
+  border-radius:5px;
+  cursor:pointer;
+}
+
+button:disabled{
+  background:#999;
+  cursor:not-allowed;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h2>Helps</h2>
+</header>
+
+<div class="container">
+
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Contact</th>
+<th>Message</th>
+<th>Date</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody id="helpTable">
+<tr><td colspan="7">Loading...</td></tr>
+</tbody>
+
+</table>
+
+</div>
+
+<script>
+
+async function loadHelpRequests(){
+
+  const res = await fetch("https://play-backend-xa7x.onrender.com/api/admin/help-requests");
+  const data = await res.json();
+
+  const tbody = document.getElementById("helpTable");
+  tbody.innerHTML="";
+
+  data.requests.forEach(r=>{
+    tbody.innerHTML += `
+      <tr>
+        <td>${r.id}</td>
+        <td>${r.name}</td>
+        <td>${r.contact}</td>
+        <td>${r.message}</td>
+        <td>${new Date(r.created_at).toLocaleString()}</td>
+        <td>${r.status}</td>
+        <td>
+          ${
+            r.status === 'pending'
+            ? `<button onclick="resolveRequest(${r.id})">Done</button>`
+            : `<button disabled>Resolved</button>`
+          }
+        </td>
+      </tr>
+    `;
+  });
+}
+
+async function resolveRequest(id){
+
+  await fetch("https://play-backend-xa7x.onrender.com/api/admin/help-request/resolve",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ id })
+  });
+
+  loadHelpRequests();
+}
+
+loadHelpRequests();
+
+</script>
+
+</body>
+</html>

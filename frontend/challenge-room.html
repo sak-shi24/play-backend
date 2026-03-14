@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Challenge Room</title>
+<link rel="stylesheet" href="css/style.css">
+
+<style>
+body{ margin:0; font-family:Arial; background:#eef1f5; }
+
+.topbar{
+  background:#28a745;
+  color:white;
+  text-align:center;
+  padding:18px;
+  font-size:26px;
+  font-weight:bold;
+}
+
+/* ⭐ MAIN LAYOUT */
+.room-wrapper{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:40px;
+  margin-top:40px;
+}
+
+/* ⭐ SIDE IMAGES */
+.side-img{
+  width:350px;
+  border-radius:12px;
+  box-shadow:0 6px 15px rgba(0,0,0,0.15);
+  transition:0.3s;
+}
+
+.side-img:hover{ transform:scale(1.05); }
+
+/* ⭐ CENTER CARD */
+.card{
+  background:white;
+  width:420px;
+  padding:35px;
+  border-radius:12px;
+  text-align:center;
+  box-shadow:0 4px 15px rgba(0,0,0,0.15);
+}
+
+button{
+  background:#28a745;
+  color:white;
+  border:none;
+  padding:10px 22px;
+  margin:8px;
+  border-radius:6px;
+  cursor:pointer;
+  font-size:15px;
+}
+
+.msg{ margin-top:10px; font-weight:bold; }
+.alert-msg{ color:red; font-weight:bold; margin-top:10px; display:none; }
+
+/* 📱 MOBILE */
+@media (max-width:900px){
+  .room-wrapper{ flex-direction:column; }
+  .side-img{ width:80%; max-width:320px; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">Play and Earn</div>
+
+<p style="text-align:center; color:red; font-weight:bold;font-size: 20px; margin-top:10px;">
+Upload the result exactly like shown in the image, otherwise the result will not be approved.
+</p>
+
+<div class="room-wrapper">
+
+  <!-- LEFT IMAGE -->
+  <img src="images/right.jpeg" class="side-img">
+
+  <!-- CENTER CARD -->
+  <div class="card">
+
+    <h2>Challenge Room</h2>
+    <p id="challengeInfo"></p>
+
+    <button id="createBtn" onclick="showCreate()">Create Room</button>
+    <button onclick="showJoin()">Join Room</button>
+
+    <div id="roomBox" style="display:none;">
+      <input id="roomCode" placeholder="Enter Ludo Room Code">
+      <br><br>
+      <button id="roomActionBtn"></button>
+    </div>
+
+    <div class="msg" id="msg"></div>
+    <div id="alertMsg" class="alert-msg"></div>
+
+    <br>
+
+    <input type="file" id="screenshot">
+
+    <br><br>
+
+    <button onclick="submitResult('win')">I WON</button>
+    <button onclick="submitResult('loss')">I LOST</button>
+    <button onclick="submitResult('room_not_found')">ROOM NOT FOUND</button>
+
+  </div>
+
+  <!-- RIGHT IMAGE -->
+  <img src="images/left.jpeg" class="side-img">
+
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const challengeId = params.get("challenge_id");
+
+const user = JSON.parse(localStorage.getItem("user"));
+const userId = user ? user.id : null;
+
+document.getElementById("challengeInfo").innerText =
+  "Challenge ID: " + challengeId;
+
+const roomBox = document.getElementById("roomBox");
+const msg = document.getElementById("msg");
+const roomCodeInput = document.getElementById("roomCode");
+const alertMsg = document.getElementById("alertMsg");
+const roomActionBtn = document.getElementById("roomActionBtn");
+
+function showCreate(){
+  roomBox.style.display="block";
+  roomCodeInput.disabled=false;
+  roomCodeInput.value="";
+  msg.innerText="Create Ludo room and enter code.";
+  roomActionBtn.innerText="Submit";
+  roomActionBtn.onclick=submitCode;
+}
+
+function showJoin(){
+  roomBox.style.display="block";
+  roomCodeInput.disabled=true;
+  msg.innerText="Waiting for opponent to create room...";
+  roomActionBtn.innerText="OK";
+  roomActionBtn.onclick=()=>{ msg.innerText="Joined successfully!"; roomActionBtn.style.display="none"; };
+
+  const pollInterval=setInterval(()=>{
+    fetch(`https://play-backend-xa7x.onrender.com/api/challenge/room-code/${challengeId}`)
+    .then(res=>res.json())
+    .then(data=>{
+      if(data.game_code){
+        clearInterval(pollInterval);
+        msg.innerText="Room Code: "+data.game_code;
+        roomCodeInput.value=data.game_code;
+      }
+    });
+  },3000);
+}
+
+function submitCode(){
+  const code=roomCodeInput.value.trim();
+  if(!/^\d{8}$/.test(code)){ alert("Room code must be exactly 8 digits"); return; }
+
+  fetch("https://play-backend-xa7x.onrender.com/api/challenge/create-room",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({challenge_id:challengeId,game_code:code})
+  })
+  .then(res=>res.json())
+  .then(data=>{
+    if(data.message.includes("Opponent is creating room")){
+      alertMsg.innerText=data.message;
+      alertMsg.style.display="block";
+      document.getElementById("createBtn").disabled=true;
+      showJoin();
+      return;
+    }
+    msg.innerText=data.message;
+    alertMsg.style.display="none";
+    roomCodeInput.disabled=true;
+  })
+  .catch(()=>alert("Server error"));
+}
+
+function submitResult(result){
+  const file=document.getElementById("screenshot").files[0];
+  if(!file){ alert("Upload screenshot first"); return; }
+
+  const formData=new FormData();
+  formData.append("challenge_id",challengeId);
+  formData.append("user_id",userId);
+  formData.append("result",result);
+  formData.append("screenshot",file);
+
+  fetch("https://play-backend-xa7x.onrender.com/api/challenge/submit-result",{method:"POST",body:formData})
+  .then(res=>res.json())
+  .then(data=>alert(data.message));
+}
+</script>
+
+</body>
+</html>

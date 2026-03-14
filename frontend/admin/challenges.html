@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Challenges Management</title>
+<link rel="stylesheet" href="../css/style.css">
+
+<style>
+body{
+  font-family: Arial;
+  margin:0;
+  background:#eef1f5;
+}
+
+header{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#28a745;
+  color:white;
+  padding:20px;
+  position:relative;
+}
+
+header h1{
+  margin:0;
+}
+
+.logout{
+  position:absolute;
+  right:20px;
+  top:50%;
+  transform:translateY(-50%);
+  background:white;
+  color:#28a745;
+  border:none;
+  padding:8px 16px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.container{
+  width:95%;
+  margin:30px auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:white;
+  margin-bottom:40px;
+}
+
+th, td{
+  padding:10px;
+  border:1px solid #ddd;
+  text-align:center;
+}
+
+th{
+  background:#28a745;
+  color:white;
+}
+
+img{
+  width:80px;
+}
+
+button.verify-btn{
+  padding:5px 10px;
+  margin:2px;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+  color:white;
+}
+
+button.approve{
+  background: #28a745;
+}
+
+button.reject{
+  background: #dc3545;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Challenges</h1>
+  <button class="logout" onclick="logout()">Logout</button>
+</header>
+
+<div class="container">
+
+<h2>Challenges List</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Creator</th>
+<th>Joiner</th>
+<th>Amount</th>
+<th>Status</th>
+<th>Game Code</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody id="challengeTable">
+<tr><td colspan="7">Loading...</td></tr>
+</tbody>
+</table>
+
+<h2>Challenge Results</h2>
+<table>
+<thead>
+<tr>
+<th>Challenge ID</th>
+<th>User Name</th>
+<th>Wallet</th>
+<th>Amount</th>
+<th>Room Code</th>
+<th>Result</th>
+<th>Status</th>
+<th>Screenshot</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="resultTable">
+<tr><td colspan="9">Loading...</td></tr>
+</tbody>
+</table>
+
+</div>
+
+<script>
+
+// Check admin login
+const admin = JSON.parse(localStorage.getItem("admin"));
+if(!admin){
+  window.location.href="../adminLogin.html";
+}
+
+// Logout
+function logout(){
+  localStorage.removeItem("admin");
+  window.location.href="../adminLogin.html";
+}
+
+/* LOAD CHALLENGES */
+async function loadChallenges(){
+  try{
+    const res = await fetch("https://play-backend-xa7x.onrender.com/api/admin/challenges");
+    const data = await res.json();
+
+    const tbody = document.getElementById("challengeTable");
+    tbody.innerHTML="";
+
+    data.challenges.forEach(c=>{
+      tbody.innerHTML += `
+      <tr>
+        <td>${c.id}</td>
+        <td>${c.creator_name || '-'}</td>
+        <td>${c.joiner_name || '-'}</td>
+        <td>${c.amount}</td>
+        <td>${c.status}</td>
+        <td>${c.game_code || '-'}</td>
+        <td>${c.result || '-'}</td>
+      </tr>
+      `;
+    });
+  }catch(err){
+    console.error(err);
+  }
+}
+
+/* LOAD RESULTS */
+async function loadResults(){
+  try{
+    const res = await fetch("https://play-backend-xa7x.onrender.com/api/admin/challenge-results");
+    const data = await res.json();
+
+    const tbody = document.getElementById("resultTable");
+    tbody.innerHTML = "";
+
+    data.results.forEach(r => {
+
+      const resultAmount = r.result === 'win' ? r.amount : -r.amount;
+
+      tbody.innerHTML += `
+        <tr>
+          <td>${r.challenge_id}</td>
+          <td>${r.name}</td>
+          <td>${r.wallet || 0}</td>
+          <td>${r.amount || 0}</td>
+          <td>${r.game_code || '-'}</td>
+          <td>${r.result}</td>
+          <td>${r.status}</td>
+          <td>
+            ${r.screenshot ? `<img src="http://localhost:5000/${r.screenshot}">` : '-'}
+          </td>
+          <td>
+            ${r.status === 'pending' ? `
+              <button class="verify-btn approve" onclick="verifyResult(${r.challenge_id}, ${r.user_id}, 'approve', ${resultAmount})">Approve</button>
+              <button class="verify-btn reject" onclick="verifyResult(${r.challenge_id}, ${r.user_id}, 'reject')">Reject</button>
+            ` : '-'}
+          </td>
+        </tr>
+      `;
+    });
+
+  }catch(err){
+    console.error(err);
+  }
+}
+
+/* VERIFY RESULT */
+function verifyResult(challenge_id, user_id, action, amount = 0){
+  fetch('http://localhost:5000/api/admin/challenge-results/verify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ challenge_id, user_id, action, result_amount: amount })
+  })
+  .then(res=>res.json())
+  .then(data=>{
+    alert(data.message);
+    loadResults();    
+    loadChallenges(); 
+  })
+  .catch(err=>console.error(err));
+}
+
+// Initial load
+loadChallenges();
+loadResults();
+
+</script>
+
+</body>
+</html>

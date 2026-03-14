@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Wallet</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    input { display:block; width:100%; margin:8px 0; padding:8px; }
+    .box { border:1px solid #ddd; padding:15px; margin-top:15px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Play and Earn</h1>
+</header>
+
+<div class="container">
+
+  <div style="text-align:right;font-weight:bold;font-size:1.2rem;">
+    Balance: <span id="balance">0</span> Coins
+  </div>
+
+  <br>
+
+  <button onclick="showDeposit()">Deposit</button>
+  <button onclick="showWithdraw()">Withdraw</button>
+
+  <!-- DEPOSIT -->
+  <div id="depositBox" class="box" style="display:none;">
+    <h3>Deposit Coins</h3>
+
+    <p>Scan QR to deposit</p>
+    <img id="qrImg" width="200">
+
+    <input type="number" id="depositAmount" placeholder="Enter Coins">
+    <input type="file" id="depositScreenshot">
+
+    <button onclick="depositCoins()">Submit Deposit</button>
+    <p id="depositMsg"></p>
+  </div>
+
+  <!-- WITHDRAW -->
+  <div id="withdrawBox" class="box" style="display:none;">
+    <h3>Withdraw Coins</h3>
+
+    <input type="number" id="withdrawAmount" placeholder="Enter Coins">
+    <input type="file" id="withdrawScanner">
+
+    <button onclick="withdrawCoins()">Submit Withdraw Request</button>
+    <p id="withdrawMsg"></p>
+  </div>
+
+</div>
+
+<script>
+const user = JSON.parse(localStorage.getItem("user"));
+if (!user) location.href = "login.html";
+
+const depositBox = document.getElementById("depositBox");
+const withdrawBox = document.getElementById("withdrawBox");
+
+/* LOAD BALANCE */
+async function loadWallet() {
+  try{
+    const r = await fetch(`https://play-backend-xa7x.onrender.com/api/wallet/balance/${user.id}`);
+    const d = await r.json();
+    document.getElementById("balance").innerText = d.wallet || 0;
+  }catch(err){
+    console.log(err);
+  }
+}
+
+/* SHOW DEPOSIT */
+async function showDeposit(){
+  depositBox.style.display="block";
+  withdrawBox.style.display="none";
+
+  try{
+    const res = await fetch("https://play-backend-xa7x.onrender.com/api/wallet/qr");
+    const data = await res.json();
+
+    if(data.qr){
+      document.getElementById("qrImg").src =
+  "https://play-backend-xa7x.onrender.com/uploads/" + encodeURIComponent(data.qr);
+    }
+  }catch(err){
+    console.log(err);
+  }
+}
+/* SHOW WITHDRAW */
+function showWithdraw() {
+  withdrawBox.style.display = "block";
+  depositBox.style.display = "none";
+}
+
+/* DEPOSIT */
+async function depositCoins() {
+  const amount = document.getElementById("depositAmount").value;
+  const file = document.getElementById("depositScreenshot").files[0];
+  const msg = document.getElementById("depositMsg");
+
+  if (!amount || !file) return msg.innerText="Fill all fields";
+
+  const fd = new FormData();
+  fd.append("user_id", user.id);
+  fd.append("amount", amount);
+  fd.append("screenshot", file);
+
+  try{
+    const r = await fetch("https://play-backend-xa7x.onrender.com/api/wallet/deposit",{method:"POST",body:fd});
+    const d = await r.json();
+    msg.innerText = d.message;
+    loadWallet();
+  }catch(err){
+    msg.innerText="Server error";
+  }
+}
+
+/* WITHDRAW */
+async function withdrawCoins() {
+  const amount = document.getElementById("withdrawAmount").value;
+  const file = document.getElementById("withdrawScanner").files[0];
+  const msg = document.getElementById("withdrawMsg");
+
+  if (!amount || !file) return msg.innerText="Fill all fields";
+
+  const fd = new FormData();
+  fd.append("user_id", user.id);
+  fd.append("amount", amount);
+  fd.append("qr_image", file);
+
+  try{
+    const r = await fetch("https://play-backend-xa7x.onrender.com/api/wallet/withdraw",{method:"POST",body:fd});
+    const d = await r.json();
+    msg.innerText = d.message;
+    loadWallet();
+  }catch(err){
+    msg.innerText="Server error";
+  }
+}
+
+loadWallet();
+</script>
+
+</body>
+</html>

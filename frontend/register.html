@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Register</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <h1>Register</h1>
+  <p>Create your account</p>
+</header>
+
+<div class="container register-form" style="max-width: 400px;">
+  <form id="registerForm">
+
+    <input type="text" id="name" placeholder="Full Name *" required>
+
+    <input type="email" id="email" placeholder="Email *" required>
+
+    <input type="text" id="phone" placeholder="Phone Number *" required>
+
+    <input type="password" id="password" placeholder="Password *" required>
+
+    <input type="text" id="referral" placeholder="Referral Code (Optional)">
+
+    <button type="submit" class="btn">Register</button>
+
+    <p style="text-align:center; margin-top:10px;">
+      Already have an account ?
+      <a href="login.html" style="color:#4CAF50; font-weight:600;">Login</a>
+    </p>
+
+    <p id="msg"></p>
+
+  </form>
+</div>
+
+<script>
+document.getElementById("registerForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const referral = document.getElementById("referral").value.trim();
+
+  if (!name || !email || !phone || !password) {
+    document.getElementById("msg").innerText = "Please fill all required fields";
+    return;
+  }
+
+  try {
+    const res = await fetch("https://play-backend-xa7x.onrender.com/api/auth/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        name,
+        email,
+        phone,
+        password,
+        referral
+      })
+    });
+
+    const data = await res.json();
+    document.getElementById("msg").innerText = data.message;
+
+    if (data.success) {
+      setTimeout(() => {
+        window.location.href = "login.html";
+      }, 1500);
+    }
+
+  } catch (err) {
+    document.getElementById("msg").innerText = "Server error";
+  }
+});
+</script>
+
+</body>
+</html>

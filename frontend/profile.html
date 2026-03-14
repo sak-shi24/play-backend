@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Profile</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { font-family: Arial, sans-serif; }
+    h2 { background: green; color: white; padding: 10px; text-align:center; border-radius: 5px; }
+    form { max-width: 500px; margin: 20px auto; display: flex; flex-direction: column; gap: 10px; }
+    input { padding: 10px; font-size: 1rem; border-radius: 5px; border:1px solid #ccc; }
+    button { padding: 10px; background: green; color: white; border:none; border-radius:5px; cursor:pointer; font-weight:bold; }
+    button:hover { background: darkgreen; }
+    label { font-weight: bold; }
+    p { margin-top: 5px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Play and Earn</h1>
+</header>
+
+<form id="profileForm">
+  <h3>Personal Details</h3>
+
+  <label>Name</label>
+  <input type="text" id="name" required>
+
+  <label>Email</label>
+  <input type="email" id="email" required>
+
+  <label>Phone</label>
+  <input type="text" id="phone" required>
+
+  <h3>Change Password (Optional)</h3>
+
+  <label>New Password</label>
+  <input type="password" id="password">
+
+  <button type="button" onclick="updateProfile()">Update Profile</button>
+  <p id="msg" style="color:green;"></p>
+</form>
+
+<script>
+const user = JSON.parse(localStorage.getItem("user"));
+if (!user) window.location.href = "login.html";
+
+function loadProfile() {
+  fetch(`https://play-backend-xa7x.onrender.com/api/wallet/profile/${user.id}`)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("name").value = data.name || "";
+      document.getElementById("email").value = data.email || "";
+      document.getElementById("phone").value = data.phone || "";
+    });
+}
+
+function updateProfile() {
+  const payload = {
+    user_id: user.id,
+    name: document.getElementById("name").value,
+    email: document.getElementById("email").value,
+    phone: document.getElementById("phone").value,
+    password: document.getElementById("password").value
+  };
+
+  fetch("https://play-backend-xa7x.onrender.com/api/wallet/profile/update", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("msg").innerText = data.message;
+  });
+}
+
+loadProfile();
+</script>
+
+</body>
+</html>

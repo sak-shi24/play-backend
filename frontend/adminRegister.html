@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Registration</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef1f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      width: 320px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    #msg {
+      margin-top: 10px;
+      font-weight: bold;
+      color: red;
+    }
+    a {
+      display: block;
+      margin-top: 10px;
+      color: #28a745;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h2>Admin Registration</h2>
+
+    <input type="text" id="name" placeholder="Name">
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+
+    <button onclick="register()">Register</button>
+
+    <p id="msg"></p>
+    <a href="adminLogin.html">Back to login</a>
+  </div>
+
+  <script>
+    async function register() {
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const msg = document.getElementById("msg");
+
+      if (!name || !email || !password) {
+        msg.innerText = "All fields are required";
+        return;
+      }
+
+      try {
+        const res = await fetch("https://play-backend-xa7x.onrender.com/api/adminAuth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password })
+        });
+
+        const data = await res.json();
+        msg.innerText = data.message;
+
+        if (data.success) {
+          msg.style.color = "green"; 
+          // Redirect to login after 1.5s
+          setTimeout(() => {
+            window.location.href = "adminLogin.html";
+          }, 1500);
+        } else {
+          msg.style.color = "red"; 
+        }
+      } catch (err) {
+        msg.innerText = "Server error, try again later";
+        msg.style.color = "red";
+      }
+    }
+  </script>
+</body>
+</html>

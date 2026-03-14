@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Withdrawals</title>
+<link rel="stylesheet" href="../css/style.css">
+
+<style>
+body{
+  font-family: Arial;
+  margin:0;
+  background:#eef1f5;
+}
+
+header{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#28a745;
+  color:white;
+  padding:20px;
+  position:relative;
+}
+
+header h1{ margin:0; }
+
+.logout{
+  position:absolute;
+  right:20px;
+  top:50%;
+  transform:translateY(-50%);
+  background:white;
+  color:#28a745;
+  border:none;
+  padding:8px 16px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.container{
+  width:95%;
+  margin:30px auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:white;
+  margin-bottom:40px;
+}
+
+th, td{
+  padding:10px;
+  border:1px solid #ddd;
+  text-align:center;
+}
+
+th{
+  background:#28a745;
+  color:white;
+}
+
+img{ width:80px; }
+button{ padding:5px 10px; margin:2px; }
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Withdrawals</h1>
+  <button class="logout" onclick="logout()">Logout</button>
+</header>
+
+<div class="container">
+
+<h2>Request List</h2>
+
+<table id="withdrawTable">
+<thead>
+<tr>
+  <th>User ID</th>
+  <th>Name</th>
+  <th>Phone</th>
+  <th>Amount</th>
+  <th>Wallet Balance</th>
+  <th>QR Code</th>
+  <th>Status</th>
+  <th>Action</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<script>
+
+/* LOAD DATA */
+fetch("https://play-backend-xa7x.onrender.com/api/admin/withdrawals")
+.then(res => res.json())
+.then(data => {
+
+    const tbody = document.querySelector("#withdrawTable tbody");
+    tbody.innerHTML = "";
+
+    data.forEach(w => {
+
+        let actionButtons = "";
+
+        if (w.status === "pending") {
+            actionButtons = `
+                <button onclick="approve(${w.id}, this)">Approve</button>
+                <button onclick="reject(${w.id}, this)">Reject</button>
+            `;
+        } 
+        else if (w.status === "approved") {
+            actionButtons = `<span style="color:green;font-weight:bold;">Approved</span>`;
+        } 
+        else {
+            actionButtons = `<span style="color:red;font-weight:bold;">Rejected</span>`;
+        }
+
+        const row = `
+        <tr>
+            <td>${w.user_id}</td>
+            <td>${w.name}</td>
+            <td>${w.phone}</td>
+            <td>${w.amount}</td>
+            <td>${w.wallet}</td>
+            <td>
+                <img src="https://play-backend-xa7x.onrender.com/uploads/${w.qr_image}">
+            </td>
+            <td>${w.status}</td>
+            <td>${actionButtons}</td>
+        </tr>
+        `;
+
+        tbody.innerHTML += row;
+    });
+
+});
+
+/* APPROVE */
+function approve(id, btn){
+    btn.disabled = true;
+
+    fetch("https://play-backend-xa7x.onrender.com/api/admin/withdrawals/approve/"+id, {
+        method:"POST"
+    }).then(()=> location.reload());
+}
+
+/* REJECT */
+function reject(id, btn){
+    btn.disabled = true;
+
+    fetch("https://play-backend-xa7x.onrender.com/api/admin/withdrawals/reject/"+id, {
+        method:"POST"
+    }).then(()=> location.reload());
+}
+
+</script>
+
+</body>
+</html>

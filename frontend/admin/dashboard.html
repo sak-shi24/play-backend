@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="../css/style.css">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #eef1f5;
+    }
+
+    /* Header */
+    header {
+      position: relative;
+      background: #28a745;
+      color: white;
+      padding: 45px 30px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+      text-align: center;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    header button {
+      position: absolute;
+      right: 30px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #fff;
+      color: #28a745;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    /* 🔔 Bell */
+    .bell-container{
+      position:absolute;
+      right:120px;
+      top:50%;
+      transform:translateY(-50%);
+      cursor:pointer;
+    }
+
+    .badge{
+      position:absolute;
+      top:-5px;
+      right:-8px;
+      background:red;
+      color:white;
+      border-radius:50%;
+      padding:2px 6px;
+      font-size:12px;
+    }
+
+    .dropdown{
+      display:none;
+      position:absolute;
+      right:0;
+      top:35px;
+      width:300px;
+      max-height:350px;
+      overflow:auto;
+      background:#fff;
+      border-radius:8px;
+      box-shadow:0 4px 10px rgba(0,0,0,0.15);
+      padding:10px;
+      color:#000;
+    }
+
+    .notification{
+      padding:8px;
+      border-bottom:1px solid #eee;
+      cursor:pointer;
+    }
+
+    .notification.unread{
+      background:#f1f7ff;
+      font-weight:bold;
+    }
+
+    /* Cards */
+    .cards {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      margin: 40px 20px;
+      gap: 20px;
+    }
+
+    .card {
+      flex: 1 1 200px;
+      background: #28a745;
+      color: white;
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .card:hover {
+      transform: scale(1.05);
+      background: #218838;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Play and Earn</h1>
+
+  <!-- 🔔 Bell -->
+  <div class="bell-container" onclick="toggleDropdown()">
+    🔔
+    <span id="badge" class="badge">0</span>
+
+    <div id="dropdown" class="dropdown">
+      <h4>Admin Notifications</h4>
+      <div id="notificationList"></div>
+    </div>
+  </div>
+
+  <button onclick="logout()">Logout</button>
+</header>
+
+<div class="container">
+  <h2 style="text-align:center; color:#4CAF50;">
+    Hello Admin...
+  </h2>
+</div>
+
+<div class="cards">
+  <div class="card" onclick="goToPage('users.html')">
+    <h2>Users</h2>
+    <p id="usersCount">0</p>
+  </div>
+  <div class="card" onclick="goToPage('challenges.html')">
+    <h2>Challenges</h2>
+    <p id="challengesCount">0</p>
+  </div>
+  <div class="card" onclick="goToPage('deposits.html')">
+    <h2>Deposit Requests</h2>
+    <p id="depositsCount">0</p>
+  </div>
+  <div class="card" onclick="goToPage('withdrawals.html')">
+    <h2>Withdraw Requests</h2>
+    <p id="withdrawalsCount">0</p>
+  </div>
+  <div class="card" onclick="goToPage('help_requests.html')">
+    <h2>Help Requests</h2>
+    <p id="helpCount">0</p>
+  </div>
+</div>
+
+<script>
+const admin = JSON.parse(localStorage.getItem("admin"));
+if(!admin){
+  window.location.href = "../adminLogin.html";
+}
+
+/* 🔔 Toggle */
+function toggleDropdown(){
+  const drop=document.getElementById("dropdown");
+  drop.style.display = drop.style.display==="block" ? "none" : "block";
+}
+
+/* 🔔 Load Admin Notifications */
+function loadNotifications(){
+fetch(`https://play-backend-xa7x.onrender.com/api/admin/notification`)
+.then(res=>res.json())
+.then(data=>{
+const list=document.getElementById("notificationList");
+list.innerHTML="";
+
+data.notifications.forEach(n=>{
+  const div=document.createElement("div");
+  div.className="notification "+(n.status==="unread"?"unread":"");
+  div.innerText=n.message;
+  div.onclick=()=>markRead(n.id);
+  list.appendChild(div);
+});
+});
+}
+
+/* 🔔 Count */
+function loadCount(){
+fetch(`https://play-backend-xa7x.onrender.com/api/admin/notification/count`)
+.then(res=>res.json())
+.then(data=>{
+document.getElementById("badge").innerText=data.count;
+});
+}
+
+/* 🔔 Mark Read */
+function markRead(id){
+fetch(`https://play-backend-xa7x.onrender.com/api/admin/notification/read/${id}`,{method:"POST"})
+.then(()=>{
+loadNotifications();
+loadCount();
+});
+}
+
+/* AUTO REFRESH */
+setInterval(()=>{
+loadNotifications();
+loadCount();
+},4000);
+
+/* Logout */
+function logout(){
+  localStorage.removeItem("admin");
+  window.location.href = "../adminLogin.html";
+}
+
+function goToPage(page){
+  window.location.href = page;
+}
+
+/* Stats */
+async function loadStats(){
+  try {
+    const res = await fetch("https://play-backend-xa7x.onrender.com/api/admin/stats");
+    const data = await res.json();
+
+    document.getElementById("usersCount").innerText = data.totalUsers || 0;
+    document.getElementById("challengesCount").innerText = data.activeChallenges || 0;
+    document.getElementById("depositsCount").innerText = data.pendingDeposits || 0;
+    document.getElementById("withdrawalsCount").innerText = data.pendingWithdrawals || 0;
+    document.getElementById("helpCount").innerText = data.pendingHelp || 0;
+
+  } catch(err){
+    console.error("Error loading stats:", err);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", ()=>{
+loadStats();
+loadNotifications();
+loadCount();
+});
+</script>
+
+</body>
+</html>
