@@ -63,7 +63,7 @@ const user = JSON.parse(localStorage.getItem("user"));
 if (!user) window.location.href = "login.html";
 
 function loadTransactions() {
-  fetch(`https://play-backend-xa7x.onrender.com/api/wallet/transactions/${user.id}`)
+  fetch(`https://play-backend-23rs.onrender.com/api/wallet/transactions/${user.id}`)
     .then(res => res.json())
     .then(data => {
 
