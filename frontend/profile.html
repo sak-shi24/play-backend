@@ -46,7 +46,7 @@ const user = JSON.parse(localStorage.getItem("user"));
 if (!user) window.location.href = "login.html";
 
 function loadProfile() {
-  fetch(`https://play-backend-xa7x.onrender.com/api/wallet/profile/${user.id}`)
+  fetch(`https://play-backend-23rs.onrender.com/api/wallet/profile/${user.id}`)
     .then(res => res.json())
     .then(data => {
       document.getElementById("name").value = data.name || "";
@@ -64,7 +64,7 @@ function updateProfile() {
     password: document.getElementById("password").value
   };
 
-  fetch("https://play-backend-xa7x.onrender.com/api/wallet/profile/update", {
+  fetch("https://play-backend-23rs.onrender.com/api/wallet/profile/update", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
