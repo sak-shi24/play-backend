@@ -149,7 +149,7 @@ function toggleDropdown(){
 
 /* NOTIFICATIONS */
 function loadNotifications(){
-fetch(`https://play-backend-xa7x.onrender.com/api/notifications/${user.id}`)
+fetch(`https://play-backend-23rs.onrender.com/api/notifications/${user.id}`)
 .then(res=>res.json())
 .then(data=>{
 const list=document.getElementById("notificationList");
@@ -167,7 +167,7 @@ arr.forEach(n=>{
 }
 
 function loadCount(){
-fetch(`https://play-backend-xa7x.onrender.com/api/notifications/count/${user.id}`)
+fetch(`https://play-backend-23rs.onrender.com/api/notifications/count/${user.id}`)
 .then(res=>res.json())
 .then(data=>{
 document.getElementById("badge").innerText=data.count || 0;
@@ -175,7 +175,7 @@ document.getElementById("badge").innerText=data.count || 0;
 }
 
 function markRead(id){
-fetch(`https://play-backend-xa7x.onrender.com/api/notifications/read/${id}`,{method:"POST"})
+fetch(`https://play-backend-23rs.onrender.com/api/notifications/read/${id}`,{method:"POST"})
 .then(()=>{ loadNotifications(); loadCount(); });
 }
 
@@ -183,7 +183,7 @@ setInterval(()=>{ loadNotifications(); loadCount(); },4000);
 
 /* CHALLENGES */
 function loadChallenges(){
-fetch(`https://play-backend-xa7x.onrender.com/api/challenge/list/${user.id}`)
+fetch(`https://play-backend-23rs.onrender.com/api/challenge/list/${user.id}`)
 .then(res=>res.json())
 .then(data=>{
 const list = document.getElementById("challengeList");
@@ -230,7 +230,7 @@ const amount=document.getElementById("challengeAmount").value;
 
 if(!amount || amount <=0){ alert("Enter valid amount"); return; }
 
-fetch("https://play-backend-xa7x.onrender.com/api/challenge/create",{
+fetch("https://play-backend-23rs.onrender.com/api/challenge/create",{
 method:"POST",
 headers:{ "Content-Type":"application/json" },
 body:JSON.stringify({creator_id:user.id,amount:amount})
@@ -243,7 +243,7 @@ body:JSON.stringify({creator_id:user.id,amount:amount})
 }
 
 function acceptChallenge(id){
-fetch("https://play-backend-xa7x.onrender.com/api/challenge/accept",{
+fetch("https://play-backend-23rs.onrender.com/api/challenge/accept",{
 method:"POST",
 headers:{ "Content-Type":"application/json" },
 body:JSON.stringify({challenge_id:id,user_id:user.id})
