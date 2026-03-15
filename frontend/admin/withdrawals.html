@@ -95,7 +95,7 @@ button{ padding:5px 10px; margin:2px; }
 <script>
 
 /* LOAD DATA */
-fetch("https://play-backend-xa7x.onrender.com/api/admin/withdrawals")
+fetch("https://play-backend-23rs.onrender.com/api/admin/withdrawals")
 .then(res => res.json())
 .then(data => {
 
@@ -127,7 +127,7 @@ fetch("https://play-backend-xa7x.onrender.com/api/admin/withdrawals")
             <td>${w.amount}</td>
             <td>${w.wallet}</td>
             <td>
-                <img src="https://play-backend-xa7x.onrender.com/uploads/${w.qr_image}">
+                <img src="https://play-backend-23rs.onrender.com/uploads/${w.qr_image}">
             </td>
             <td>${w.status}</td>
             <td>${actionButtons}</td>
@@ -143,7 +143,7 @@ fetch("https://play-backend-xa7x.onrender.com/api/admin/withdrawals")
 function approve(id, btn){
     btn.disabled = true;
 
-    fetch("https://play-backend-xa7x.onrender.com/api/admin/withdrawals/approve/"+id, {
+    fetch("https://play-backend-23rs.onrender.com/api/admin/withdrawals/approve/"+id, {
         method:"POST"
     }).then(()=> location.reload());
 }
@@ -152,7 +152,7 @@ function approve(id, btn){
 function reject(id, btn){
     btn.disabled = true;
 
-    fetch("https://play-backend-xa7x.onrender.com/api/admin/withdrawals/reject/"+id, {
+    fetch("https://play-backend-23rs.onrender.com/api/admin/withdrawals/reject/"+id, {
         method:"POST"
     }).then(()=> location.reload());
 }
