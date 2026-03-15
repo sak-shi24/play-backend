@@ -150,7 +150,7 @@ function logout(){
 /* LOAD CHALLENGES */
 async function loadChallenges(){
   try{
-    const res = await fetch("https://play-backend-xa7x.onrender.com/api/admin/challenges");
+    const res = await fetch("https://play-backend-23rs.onrender.com/api/admin/challenges");
     const data = await res.json();
 
     const tbody = document.getElementById("challengeTable");
@@ -177,7 +177,7 @@ async function loadChallenges(){
 /* LOAD RESULTS */
 async function loadResults(){
   try{
-    const res = await fetch("https://play-backend-xa7x.onrender.com/api/admin/challenge-results");
+    const res = await fetch("https://play-backend-23rs.onrender.com/api/admin/challenge-results");
     const data = await res.json();
 
     const tbody = document.getElementById("resultTable");
@@ -197,7 +197,7 @@ async function loadResults(){
           <td>${r.result}</td>
           <td>${r.status}</td>
           <td>
-            ${r.screenshot ? `<img src="http://localhost:5000/${r.screenshot}">` : '-'}
+            ${r.screenshot ? `<img src="https://play-backend-23rs.onrender.com/${r.screenshot}">` : '-'}
           </td>
           <td>
             ${r.status === 'pending' ? `
@@ -216,7 +216,7 @@ async function loadResults(){
 
 /* VERIFY RESULT */
 function verifyResult(challenge_id, user_id, action, amount = 0){
-  fetch('http://localhost:5000/api/admin/challenge-results/verify', {
+  fetch('https://play-backend-23rs.onrender.com/api/admin/challenge-results/verify', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ challenge_id, user_id, action, result_amount: amount })
