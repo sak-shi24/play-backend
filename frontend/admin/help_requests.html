@@ -89,7 +89,7 @@ button:disabled{
 
 async function loadHelpRequests(){
 
-  const res = await fetch("https://play-backend-xa7x.onrender.com/api/admin/help-requests");
+  const res = await fetch("https://play-backend-23rs.onrender.com/api/admin/help-requests");
   const data = await res.json();
 
   const tbody = document.getElementById("helpTable");
@@ -118,7 +118,7 @@ async function loadHelpRequests(){
 
 async function resolveRequest(id){
 
-  await fetch("https://play-backend-xa7x.onrender.com/api/admin/help-request/resolve",{
+  await fetch("https://play-backend-23rs.onrender.com/api/admin/help-request/resolve",{
     method:"POST",
     headers:{ "Content-Type":"application/json" },
     body: JSON.stringify({ id })
