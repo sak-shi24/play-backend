@@ -4,24 +4,29 @@ const path = require("path");
 
 const app = express();
 
-// CORS — allow all origins (restrict to your frontend URL in production if needed)
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(",")
-  : "*";
+/* =========================
+   CORS CONFIG
+========================= */
 
 app.use(cors({
-  origin: allowedOrigins,
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  origin: "*",
+  methods: ["GET","POST","PUT","DELETE"],
+  allowedHeaders: ["Content-Type","Authorization"]
 }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// DB connection (imported here so it runs at startup and exits on failure)
+/* =========================
+   DATABASE
+========================= */
+
 require("./config/db");
 
-// Routes
+/* =========================
+   ROUTES
+========================= */
+
 const authRoutes = require("./routes/auth");
 const walletRoutes = require("./routes/wallet");
 const referralRoutes = require("./routes/referral");
@@ -31,10 +36,16 @@ const challengeRoutes = require("./routes/challenge");
 const notificationRoutes = require("./routes/notifications");
 const adminNotificationRoutes = require("./routes/adminNotification");
 
-// Serve uploads folder
+/* =========================
+   STATIC FILES
+========================= */
+
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// API Routes
+/* =========================
+   API ROUTES
+========================= */
+
 app.use("/api/auth", authRoutes);
 app.use("/api/wallet", walletRoutes);
 app.use("/api/referral", referralRoutes);
@@ -44,33 +55,59 @@ app.use("/api/challenge", challengeRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/admin/notification", adminNotificationRoutes);
 
-// Health check / root route
+/* =========================
+   HEALTH CHECK
+========================= */
+
 app.get("/", (req, res) => {
-  res.json({ status: "ok", message: "Server is running" });
+  res.json({
+    success: true,
+    message: "Server running successfully"
+  });
 });
 
-// 404 handler
+/* =========================
+   404 HANDLER
+========================= */
+
 app.use((req, res) => {
-  res.status(404).json({ success: false, message: "Route not found" });
+  res.status(404).json({
+    success:false,
+    message:"Route not found"
+  });
 });
 
-// Global error handler — catches errors thrown by route handlers
+/* =========================
+   ERROR HANDLER
+========================= */
+
 app.use((err, req, res, next) => {
-  console.error("Unhandled error:", err);
-  res.status(500).json({ success: false, message: "Internal server error" });
+  console.error(err);
+  res.status(500).json({
+    success:false,
+    message:"Internal server error"
+  });
 });
 
-// Start Server — bind to 0.0.0.0 so Render can expose the port
+/* =========================
+   START SERVER
+========================= */
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server started on port ${PORT}`);
+
+app.listen(PORT,"0.0.0.0",()=>{
+  console.log(`Server running on port ${PORT}`);
 });
 
-// Crash logging
-process.on("unhandledRejection", (err) => {
-  console.error("Unhandled Rejection:", err);
+/* =========================
+   CRASH HANDLING
+========================= */
+
+process.on("unhandledRejection",(err)=>{
+  console.error("Unhandled Rejection:",err);
 });
-process.on("uncaughtException", (err) => {
-  console.error("Uncaught Exception:", err);
+
+process.on("uncaughtException",(err)=>{
+  console.error("Uncaught Exception:",err);
   process.exit(1);
 });
