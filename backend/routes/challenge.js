@@ -37,7 +37,7 @@ router.post("/create", (req, res) => {
       if (rows.length === 0)
         return res.status(400).json({ message: "User not found" });
 
-      if (rows[0].wallet < amount) {
+      if (Number(rows[0].wallet) < Number(amount)) {
         return res.status(400).json({
           message: "You do not have sufficient amount in wallet"
         });
