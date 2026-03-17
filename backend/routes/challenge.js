@@ -22,14 +22,10 @@ const upload = multer({ storage: storage });
 
 /* CREATE CHALLENGE */
 router.post("/create", (req, res) => {
-  console.log("Creator ID:", creator_id);
-
-db.query(
-  "SELECT wallet FROM users WHERE id=?",
-  [creator_id],
-  (err, rows) => {
-    console.log("DB Result:", rows);
   const { creator_id, amount } = req.body;
+
+  console.log("Creator ID:", creator_id);
+  console.log("Amount:", amount);
 
   if (!creator_id || !amount) {
     return res.status(400).json({ message: "Missing data" });
@@ -44,7 +40,12 @@ db.query(
       if (rows.length === 0)
         return res.status(400).json({ message: "User not found" });
 
-      if (Number(rows[0].wallet) < Number(amount)) {
+      const wallet = Number(rows[0].wallet);
+      const amt = Number(amount);
+
+      console.log("Wallet:", wallet, "Amount:", amt);
+
+      if (wallet < amt) {
         return res.status(400).json({
           message: "You do not have sufficient amount in wallet"
         });
@@ -53,7 +54,7 @@ db.query(
       const sql =
         "INSERT INTO challenges (creator_id, amount, status) VALUES (?, ?, 'open')";
 
-      db.query(sql, [creator_id, amount], (err2, result) => {
+      db.query(sql, [creator_id, amt], (err2, result) => {
         if (err2) return res.status(500).json({ message: "Server error" });
 
         res.json({
@@ -64,7 +65,6 @@ db.query(
     }
   );
 });
-
 /* CREATE ROOM */
 router.post("/create-room", (req, res) => {
   const { challenge_id, game_code } = req.body;
