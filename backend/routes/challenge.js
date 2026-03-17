@@ -22,6 +22,13 @@ const upload = multer({ storage: storage });
 
 /* CREATE CHALLENGE */
 router.post("/create", (req, res) => {
+  console.log("Creator ID:", creator_id);
+
+db.query(
+  "SELECT wallet FROM users WHERE id=?",
+  [creator_id],
+  (err, rows) => {
+    console.log("DB Result:", rows);
   const { creator_id, amount } = req.body;
 
   if (!creator_id || !amount) {
