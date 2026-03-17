@@ -81,7 +81,7 @@ async function showDeposit(){
 
     if(data.qr){
       document.getElementById("qrImg").src =
-  "https://play-backend-23rs.onrender.com/uploads/" + encodeURIComponent(data.qr);
+  "https://play-backend-23rs.onrender.com/uploads/" + data.qr + "?t=" + Date.now();
     }
   }catch(err){
     console.log(err);
