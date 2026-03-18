@@ -197,7 +197,7 @@ async function loadResults(){
           <td>${r.result}</td>
           <td>${r.status}</td>
           <td>
-            ${r.screenshot ? `<img src="https://play-backend-23rs.onrender.com/${r.screenshot}?t=${Date.now()}" width="100">` : '-'}
+            ${r.screenshot ? `<img src="https://play-backend-23rs.onrender.com/uploads/${r.screenshot}?t=${Date.now()}" width="100">` : '-'}
           </td>
           <td>
             ${r.status === 'pending' ? `
