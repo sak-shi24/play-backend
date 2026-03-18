@@ -185,7 +185,7 @@ async function loadResults(){
 
     data.results.forEach(r => {
 
-      const resultAmount = r.result === 'win' ? r.amount : -r.amount;
+      const resultAmount = r.result === 'win' ? (r.amount * 0.95) : -r.amount;
 
       tbody.innerHTML += `
         <tr>
@@ -197,7 +197,7 @@ async function loadResults(){
           <td>${r.result}</td>
           <td>${r.status}</td>
           <td>
-            ${r.screenshot ? `<img src="https://play-backend-23rs.onrender.com/${r.screenshot}">` : '-'}
+            ${r.screenshot ? `<img src="https://play-backend-23rs.onrender.com/${r.screenshot}?t=${Date.now()}" width="100">` : '-'}
           </td>
           <td>
             ${r.status === 'pending' ? `
