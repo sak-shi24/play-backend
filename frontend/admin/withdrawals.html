@@ -127,7 +127,7 @@ fetch("https://play-backend-23rs.onrender.com/api/admin/withdrawals")
             <td>${w.amount}</td>
             <td>${w.wallet}</td>
             <td>
-                <img src="https://play-backend-23rs.onrender.com/uploads/${w.qr_image}">
+                ${w.qr_image ? `<img src="https://play-backend-23rs.onrender.com/uploads/${w.qr_image}?t=${Date.now()}" width="100">`: '-'}
             </td>
             <td>${w.status}</td>
             <td>${actionButtons}</td>
