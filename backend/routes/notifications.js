@@ -39,4 +39,17 @@ router.post("/read/:id",(req,res)=>{
   );
 });
 
+router.post("/save-token", (req,res)=>{
+  const { user_id, token } = req.body;
+
+  db.query(
+    "UPDATE users SET fcm_token=? WHERE id=?",
+    [token, user_id],
+    (err)=>{
+      if(err) return res.status(500).json({message:"DB error"});
+      res.json({message:"Token saved"});
+    }
+  );
+});
+
 module.exports = router;
