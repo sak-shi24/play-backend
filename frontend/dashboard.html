@@ -276,8 +276,7 @@ loadCount();
     projectId: "play-and-earn-ba282",
     storageBucket: "play-and-earn-ba282.firebasestorage.app",
     messagingSenderId: "905951699525",
-    appId: "1:905951699525:web:f096537b769b3d7aa1392c",
-    measurementId: "G-0S9RBFFYBB"
+    appId: "1:905951699525:web:f096537b769b3d7aa1392c"
   };
 
   const app = initializeApp(firebaseConfig);
@@ -289,8 +288,11 @@ loadCount();
     if(permission === "granted"){
       console.log("Permission allowed ✅");
 
-      // ✅ SERVICE WORKER REGISTER (IMPORTANT FIX)
+      // ✅ register service worker
       const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+
+      // ✅ wait until ready (IMPORTANT FIX)
+      await navigator.serviceWorker.ready;
 
       const token = await getToken(messaging, {
         vapidKey: "BGPfJrA2z1GIL4nkFgLFdYpb8w1jKvoUsKtqs23ZVF0LEyhb3hEbo6Oi-afOpA5Ub_Wgf-zFVcVIRrmYR4tiN7g",
@@ -306,7 +308,6 @@ loadCount();
 
   initNotification();
 
-  // Foreground message
   onMessage(messaging, (payload) => {
     alert(payload.notification.title + " - " + payload.notification.body);
   });
