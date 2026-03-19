@@ -289,8 +289,12 @@ loadCount();
     if(permission === "granted"){
       console.log("Permission allowed ✅");
 
+      // ✅ SERVICE WORKER REGISTER (IMPORTANT FIX)
+      const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+
       const token = await getToken(messaging, {
-        vapidKey: "BGPfJrA2z1GIL4nkFgLFdYpb8w1jKvoUsKtqs23ZVF0LEyhb3hEbo6Oi-afOpA5Ub_Wgf-zFVcVIRrmYR4tiN7g"
+        vapidKey: "BGPfJrA2z1GIL4nkFgLFdYpb8w1jKvoUsKtqs23ZVF0LEyhb3hEbo6Oi-afOpA5Ub_Wgf-zFVcVIRrmYR4tiN7g",
+        serviceWorkerRegistration: registration
       });
 
       console.log("TOKEN:", token);
@@ -306,7 +310,6 @@ loadCount();
   onMessage(messaging, (payload) => {
     alert(payload.notification.title + " - " + payload.notification.body);
   });
-
-</script>  
+</script>
 </body>
 </html>
