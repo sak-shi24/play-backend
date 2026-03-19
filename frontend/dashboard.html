@@ -268,7 +268,7 @@ loadCount();
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-  import { getMessaging } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-messaging.js";
+  import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-messaging.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBBNE3vjnOMFIDWdFzm0NIsoaFsiBDsb6k",
@@ -283,8 +283,30 @@ loadCount();
   const app = initializeApp(firebaseConfig);
   const messaging = getMessaging(app);
 
-  console.log("Firebase connected ✅");
-</script>
-  
+  async function initNotification(){
+    const permission = await Notification.requestPermission();
+
+    if(permission === "granted"){
+      console.log("Permission allowed ✅");
+
+      const token = await getToken(messaging, {
+        vapidKey: "BGPfJrA2z1GIL4nkFgLFdYpb8w1jKvoUsKtqs23ZVF0LEyhb3hEbo6Oi-afOpA5Ub_Wgf-zFVcVIRrmYR4tiN7g"
+      });
+
+      console.log("TOKEN:", token);
+
+    } else {
+      console.log("Permission denied ❌");
+    }
+  }
+
+  initNotification();
+
+  // Foreground message
+  onMessage(messaging, (payload) => {
+    alert(payload.notification.title + " - " + payload.notification.body);
+  });
+
+</script>  
 </body>
 </html>
