@@ -1,16 +1,32 @@
 const express = require("express");
 const cors = require("cors");
-const app = express();
-app.use(cors({
-  origin:"*",
-  methods: ["GET","POST","PUT","DELETE"],
-  allowedHeaders: ["Content-Type","Authorization"]}))
-app.use(express.json()); 
 const path = require("path");
 
-const db = require("./config/db"); // Ensure this connects properly to MySQL
+const app = express();
 
-// Routes
+/* =========================
+   CORS CONFIG
+========================= */
+
+app.use(cors({
+  origin: "*",
+  methods: ["GET","POST","PUT","DELETE"],
+  allowedHeaders: ["Content-Type","Authorization"]
+}));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+/* =========================
+   DATABASE
+========================= */
+
+require("./config/db");
+
+/* =========================
+   ROUTES
+========================= */
+
 const authRoutes = require("./routes/auth");
 const walletRoutes = require("./routes/wallet");
 const referralRoutes = require("./routes/referral");
@@ -20,15 +36,16 @@ const challengeRoutes = require("./routes/challenge");
 const notificationRoutes = require("./routes/notifications");
 const adminNotificationRoutes = require("./routes/adminNotification");
 
+/* =========================
+   STATIC FILES
+========================= */
 
-
-
-app.use(express.urlencoded({ extended: true })); // Optional, for form submissions
-
-// Serve uploads folder
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// API Routes
+/* =========================
+   API ROUTES
+========================= */
+
 app.use("/api/auth", authRoutes);
 app.use("/api/wallet", walletRoutes);
 app.use("/api/referral", referralRoutes);
@@ -38,22 +55,59 @@ app.use("/api/challenge", challengeRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/admin/notification", adminNotificationRoutes);
 
+/* =========================
+   HEALTH CHECK
+========================= */
 
-// Test route
 app.get("/", (req, res) => {
-  res.send("MySQL Server Running");
+  res.json({
+    success: true,
+    message: "Server running successfully"
+  });
 });
 
-// Start Server
+/* =========================
+   404 HANDLER
+========================= */
+
+app.use((req, res) => {
+  res.status(404).json({
+    success:false,
+    message:"Route not found"
+  });
+});
+
+/* =========================
+   ERROR HANDLER
+========================= */
+
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({
+    success:false,
+    message:"Internal server error"
+  });
+});
+
+/* =========================
+   START SERVER
+========================= */
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server started on port ${PORT}`);
+
+app.listen(PORT,"0.0.0.0",()=>{
+  console.log(`Server running on port ${PORT}`);
 });
 
-// Optional: Handle uncaught errors
-process.on("unhandledRejection", (err) => {
-  console.error("Unhandled Rejection:", err);
+/* =========================
+   CRASH HANDLING
+========================= */
+
+process.on("unhandledRejection",(err)=>{
+  console.error("Unhandled Rejection:",err);
 });
-process.on("uncaughtException", (err) => {
-  console.error("Uncaught Exception:", err);
+
+process.on("uncaughtException",(err)=>{
+  console.error("Uncaught Exception:",err);
+  process.exit(1);
 });
