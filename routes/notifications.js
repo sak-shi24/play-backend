@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../config/db");
+const admin = require("firebase-admin");
 
-/* ✅ SAVE TOKEN (UPAR RAKHO) */
+/* ✅ SAVE TOKEN */
 router.post("/save-token", (req,res)=>{
   const { user_id, token } = req.body;
 
@@ -51,6 +52,35 @@ router.post("/read/:id",(req,res)=>{
     [req.params.id],
     ()=> res.json({message:"Read"})
   );
+});
+
+/* 🔥 SEND PUSH NOTIFICATION */
+router.post("/send", async (req, res) => {
+  try {
+    const { token, title, body } = req.body;
+
+    const message = {
+      notification: {
+        title: title,
+        body: body
+      },
+      token: token
+    };
+
+    const response = await admin.messaging().send(message);
+
+    res.json({
+      success: true,
+      response
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: "Notification failed"
+    });
+  }
 });
 
 module.exports = router;
